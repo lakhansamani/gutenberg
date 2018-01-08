@@ -2,14 +2,13 @@
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { withState } from '@wordpress/components';
+import { withState, SandBox, CodeEditor } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import './editor.scss';
 import BlockControls from '../../block-controls';
-import PlainText from '../../plain-text';
 
 export const name = 'core/html';
 
@@ -39,35 +38,33 @@ export const settings = {
 
 	edit: withState( {
 		preview: false,
-	} )( ( { attributes, setAttributes, setState, focus, preview } ) => [
-		focus && (
-			<BlockControls key="controls">
-				<div className="components-toolbar">
-					<button
-						className={ `components-tab-button ${ ! preview ? 'is-active' : '' }` }
-						onClick={ () => setState( { preview: false } ) }>
-						<span>HTML</span>
-					</button>
-					<button
-						className={ `components-tab-button ${ preview ? 'is-active' : '' }` }
-						onClick={ () => setState( { preview: true } ) }>
-						<span>{ __( 'Preview' ) }</span>
-					</button>
-				</div>
-			</BlockControls>
-		),
-		preview ?
-			<div
-				key="preview"
-				dangerouslySetInnerHTML={ { __html: attributes.content } } /> :
-			<PlainText
-				className="wp-block-html"
-				key="editor"
-				value={ attributes.content }
-				onChange={ ( content ) => setAttributes( { content } ) }
-				aria-label={ __( 'HTML' ) }
-			/>,
-	] ),
+	} )( ( { attributes, setAttributes, setState, focus, preview } ) => (
+		<div className="wp-block-html">
+			{ focus && (
+				<BlockControls>
+					<div className="components-toolbar">
+						<button
+							className={ `components-tab-button ${ ! preview ? 'is-active' : '' }` }
+							onClick={ () => setState( { preview: false } ) }
+						>
+							<span>HTML</span>
+						</button>
+						<button
+							className={ `components-tab-button ${ preview ? 'is-active' : '' }` }
+							onClick={ () => setState( { preview: true } ) }
+						>
+							<span>{ __( 'Preview' ) }</span>
+						</button>
+					</div>
+				</BlockControls>
+			) }
+			{ preview ? (
+				<SandBox html={ attributes.content } />
+			) : (
+				<CodeEditor value={ attributes.content } onChange={ content => setAttributes( { content } ) } />
+			) }
+		</div>
+	) ),
 
 	save( { attributes } ) {
 		return attributes.content;
