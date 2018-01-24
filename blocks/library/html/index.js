@@ -37,6 +37,15 @@ export const settings = {
 		},
 	},
 
+	transforms: {
+		from: [
+			{
+				type: 'raw',
+				isMatch: ( node ) => node.nodeName === 'IFRAME',
+			},
+		],
+	},
+
 	edit: withState( {
 		preview: false,
 	} )( ( { attributes, setAttributes, setState, focus, preview } ) => [
