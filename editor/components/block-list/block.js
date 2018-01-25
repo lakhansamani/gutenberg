@@ -3,7 +3,7 @@
  */
 import { connect } from 'react-redux';
 import classnames from 'classnames';
-import { get, partial, reduce, size } from 'lodash';
+import { get, partial, reduce, size, noop } from 'lodash';
 
 /**
  * WordPress dependencies
@@ -17,7 +17,7 @@ import {
 	getSaveElement,
 	isReusableBlock,
 } from '@wordpress/blocks';
-import { withFilters, withContext } from '@wordpress/components';
+import { withFilters, withContext, withAPIData } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 
 /**
@@ -64,6 +64,7 @@ import {
 	isSelectionEnabled,
 	isTyping,
 	getBlockMode,
+	getCurrentPostType,
 } from '../../store/selectors';
 
 const { BACKSPACE, ESCAPE, DELETE, ENTER, UP, RIGHT, DOWN, LEFT } = keycodes;
@@ -119,6 +120,12 @@ export class BlockListBlock extends Component {
 
 		this.state = {
 			error: null,
+		};
+	}
+
+	getChildContext() {
+		return {
+			unfilteredHTML: get( this.props.user, 'data.capabilities.unfiltered_html', false ),
 		};
 	}
 
@@ -509,6 +516,7 @@ const mapStateToProps = ( state, { uid } ) => ( {
 	meta: getEditedPostAttribute( state, 'meta' ),
 	mode: getBlockMode( state, uid ),
 	isSelectionEnabled: isSelectionEnabled( state ),
+	postType: getCurrentPostType( state ),
 } );
 
 const mapDispatchToProps = ( dispatch, ownProps ) => ( {
@@ -577,6 +585,10 @@ const mapDispatchToProps = ( dispatch, ownProps ) => ( {
 
 BlockListBlock.className = 'editor-block-list__block-edit';
 
+BlockListBlock.childContextTypes = {
+	unfilteredHTML: noop,
+};
+
 export default compose(
 	connect( mapStateToProps, mapDispatchToProps ),
 	withContext( 'editor' )( ( settings ) => {
@@ -587,4 +599,7 @@ export default compose(
 		};
 	} ),
 	withFilters( 'editor.BlockListBlock' ),
+	withAPIData( ( { postType } ) => ( {
+		user: `/wp/v2/users/me?post_type=${ postType }&context=edit`,
+	} ) ),
 )( BlockListBlock );
