@@ -18,6 +18,8 @@ const types = [
 	'google-docs',
 	'ms-word',
 	'ms-word-online',
+	'one-image',
+	'two-images',
 ];
 
 describe( 'raw handling: integration', () => {
