@@ -1,4 +1,8 @@
 {
+	"env": {
+		"mocha": true,
+		"jest/globals": false
+	},
 	"globals": {
 		"cy": true,
 		"Cypress": true
