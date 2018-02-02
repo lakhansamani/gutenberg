@@ -39,9 +39,9 @@ import { EVENTS } from './constants';
 const { BACKSPACE, DELETE, ENTER } = keycodes;
 
 /**
- * Holds the rectangle of the root node, to use across instances when needed.
+ * Holds the offset of the root node, to use across instances when needed.
  */
-let scrollPosition;
+let offsetTop;
 
 function createTinyMCEElement( type, props, ...children ) {
 	if ( props[ 'data-mce-bogus' ] === 'all' ) {
@@ -219,27 +219,20 @@ export default class RichText extends Component {
 	}
 
 	onFocus() {
-		// For small screens (virtual keyboard), always scroll the focussed
-		// editor into view. Unfortunately we cannot detect virtual keyboards.
-		if ( window.innerWidth < 784 ) {
-			// Do not scroll until click/touch finished.
-			setTimeout( () => {
-				if ( this.editor.removed ) {
-					return;
-				}
+		// For virtual keyboards, always scroll the focussed editor into view.
+		// Unfortunately we cannot detect virtual keyboards, so we check UA.
+		if ( /iPad|iPhone|iPod|Android/i.test( window.navigator.userAgent ) ) {
+			const rootNode = this.editor.getBody();
+			const rootRect = rootNode.getBoundingClientRect();
+			const caretRect = this.editor.selection.getRng().getClientRects()[ 0 ];
+			const offset = caretRect ? caretRect.top - rootRect.top : 0;
 
-				const rootNode = this.editor.getBody();
-				const rootRect = rootNode.getBoundingClientRect();
-				const caretRect = this.editor.selection.getRng().getClientRects()[ 0 ];
-				const offset = caretRect ? caretRect.top - rootRect.top : 0;
-
-				scrollIntoView( rootNode, getScrollContainer( rootNode ), {
-					// Give enough room for toolbar. Must be top.
-					// Unfortunately we cannot scroll to bottom as the
-					// virtual keyboard overlaps the window.
-					offsetTop: 100 - offset,
-					alignWithTop: true,
-				} );
+			scrollIntoView( rootNode, getScrollContainer( rootNode ), {
+				// Give enough room for toolbar. Must be top.
+				// Unfortunately we cannot scroll to bottom as the virtual
+				// keyboard does not change the window size.
+				offsetTop: 100 - offset,
+				alignWithTop: true,
 			} );
 		}
 
@@ -618,12 +611,10 @@ export default class RichText extends Component {
 				if ( event.shiftKey || ! this.props.onSplit ) {
 					this.editor.execCommand( 'InsertLineBreak', false, event );
 				} else {
-					// For small screens, save the root node rectangle so it can
-					// the position can be scrolled to in the next focussed
+					// For type writing offect, save the root node offset so it
+					// can the position can be scrolled to in the next focussed
 					// instance.
-					if ( window.innerWidth < 784 ) {
-						scrollPosition = this.editor.getBody().getBoundingClientRect();
-					}
+					offsetTop = rootNode.getBoundingClientRect().top;
 
 					this.splitContent();
 				}
@@ -862,16 +853,18 @@ export default class RichText extends Component {
 	}
 
 	onTinyMCEMount( node ) {
+		if ( ! offsetTop ) {
+			return;
+		}
+
 		// When a new instance is created, scroll the root node into the
 		// position of the root node that captured ENTER.
-		if ( scrollPosition && window.innerWidth < 784 ) {
-			scrollIntoView( node, getScrollContainer( node ), {
-				offsetTop: scrollPosition.top,
-				alignWithTop: true,
-			} );
+		scrollIntoView( node, getScrollContainer( node ), {
+			offsetTop,
+			alignWithTop: true,
+		} );
 
-			scrollPosition = null;
-		}
+		offsetTop = null;
 	}
 
 	render() {
