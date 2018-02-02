@@ -98,7 +98,8 @@ export class BlockListBlock extends Component {
 	}
 
 	componentDidMount() {
-		if ( this.props.focus ) {
+		// If there is a contenteditable element, it will move focus there.
+		if ( this.props.focus && ! this.node.querySelector( '[contenteditable="true"]' ) ) {
 			this.node.focus();
 		}
 
