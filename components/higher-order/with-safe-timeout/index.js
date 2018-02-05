@@ -22,6 +22,7 @@ function withSafeTimeout( OriginalComponent ) {
 			super( ...arguments );
 			this.timeouts = [];
 			this.setTimeout = this.setTimeout.bind( this );
+			this.clear = this.clear.bind( this );
 		}
 
 		componentWillUnmount() {
@@ -29,7 +30,16 @@ function withSafeTimeout( OriginalComponent ) {
 		}
 
 		setTimeout( fn, delay ) {
-			this.timeouts.push( setTimeout( fn, delay ) );
+			const id = setTimeout( () => {
+				fn();
+				this.clear( id );
+			}, delay );
+			this.timeouts.push( id );
+			return id;
+		}
+
+		clear( id ) {
+			this.timeouts = this.timeouts.filter( t => t !== id );
 		}
 
 		render() {
