@@ -12,7 +12,7 @@ const { clearTimeout, setTimeout } = window;
  * A higher-order component used to provide and manage delayed function calls
  * that ought to be bound to a component's lifecycle.
  *
- * @param {Component} OriginalComponent   Component requiring setSafeTimeout
+ * @param {Component} OriginalComponent   Component requiring setTimeout
  *
  * @returns {Component}                   Wrapped component.
  */
@@ -21,14 +21,14 @@ function withSafeTimeout( OriginalComponent ) {
 		constructor() {
 			super( ...arguments );
 			this.timeouts = [];
-			this.setSafeTimeout = this.setSafeTimeout.bind( this );
+			this.setTimeout = this.setTimeout.bind( this );
 		}
 
 		componentWillUnmount() {
 			this.timeouts.forEach( clearTimeout );
 		}
 
-		setSafeTimeout( fn, delay ) {
+		setTimeout( fn, delay ) {
 			this.timeouts.push( setTimeout( fn, delay ) );
 		}
 
@@ -36,7 +36,7 @@ function withSafeTimeout( OriginalComponent ) {
 			return (
 				<OriginalComponent
 					{ ...this.props }
-					setSafeTimeout={ this.setSafeTimeout }
+					setTimeout={ this.setTimeout }
 				/>
 			);
 		}
