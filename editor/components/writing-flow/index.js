@@ -4,6 +4,8 @@
 import { connect } from 'react-redux';
 import 'element-closest';
 import { find, last, reverse, clamp } from 'lodash';
+import tinymce from 'tinymce';
+
 /**
  * WordPress dependencies
  */
@@ -27,8 +29,13 @@ import {
 	getMultiSelectedBlocksEndUid,
 	getMultiSelectedBlocks,
 	getSelectedBlock,
+	getSelectedBlocksInitialPosition,
 } from '../../store/selectors';
-import { multiSelect, appendDefaultBlock, focusBlock } from '../../store/actions';
+import {
+	multiSelect,
+	appendDefaultBlock,
+	selectBlock,
+} from '../../store/actions';
 
 /**
  * Module Constants
@@ -103,6 +110,19 @@ class WritingFlow extends Component {
 		} );
 	}
 
+	getInnerTabbable( target, isReverse ) {
+		let focusableNodes = this.getVisibleTabbables();
+		if ( isReverse ) {
+			focusableNodes = reverse( focusableNodes );
+		}
+
+		const innerItem = find( focusableNodes, ( node ) => {
+			return target !== node && target.contains( node );
+		} );
+
+		return innerItem ? innerItem : target;
+	}
+
 	isInLastNonEmptyBlock( target ) {
 		const tabbables = this.getVisibleTabbables();
 
@@ -143,7 +163,8 @@ class WritingFlow extends Component {
 	moveSelection( blocks, currentUid, delta ) {
 		const currentIndex = blocks.indexOf( currentUid );
 		const nextIndex = clamp( currentIndex + delta, 0, blocks.length - 1 );
-		this.props.onFocusBlock( blocks[ nextIndex ] );
+
+		this.props.onSelectBlock( blocks[ nextIndex ] );
 	}
 
 	isEditableEdge( moveUp, target ) {
@@ -205,6 +226,31 @@ class WritingFlow extends Component {
 		}
 	}
 
+	componentDidUpdate( prevProps ) {
+		// When selecting a new block, we focus its first editable or the container
+		if (
+			this.props.selectedBlock &&
+			( ! prevProps.selectedBlock || this.props.selectedBlock.uid !== prevProps.selectedBlock.uid )
+		) {
+			const blockContainer = this.container.querySelector( `[data-block="${ this.props.selectedBlock.uid }"]` );
+			if ( ! blockContainer.contains( document.activeElement ) ) {
+				const target = this.getInnerTabbable( blockContainer, this.props.initialPosition === -1 );
+				target.focus();
+				if ( this.props.initialPosition === -1 ) {
+					// Special casing richtext because the two functions at the bo bottomare not working as expected.
+					const editor = tinymce.get( target.getAttribute( 'id' ) );
+					if ( editor ) {
+						editor.selection.select( editor.getBody(), true );
+						editor.selection.collapse( false );
+					} else {
+						placeCaretAtHorizontalEdge( target, true );
+						placeCaretAtVerticalEdge( target, true );
+					}
+				}
+			}
+		}
+	}
+
 	render() {
 		const { children } = this.props;
 
@@ -231,10 +277,11 @@ export default connect(
 		selectionEnd: getMultiSelectedBlocksEndUid( state ),
 		hasMultiSelection: getMultiSelectedBlocks( state ).length > 1,
 		selectedBlock: getSelectedBlock( state ),
+		initialPosition: getSelectedBlocksInitialPosition( state ),
 	} ),
 	{
 		onMultiSelect: multiSelect,
 		onBottomReached: appendDefaultBlock,
-		onFocusBlock: focusBlock,
+		onSelectBlock: selectBlock,
 	}
 )( WritingFlow );

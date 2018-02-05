@@ -360,14 +360,13 @@ export function isTyping( state = false, action ) {
 export function blockSelection( state = {
 	start: null,
 	end: null,
-	focus: null,
 	isMultiSelecting: false,
 	isEnabled: true,
+	initialPosition: null,
 }, action ) {
 	switch ( action.type ) {
 		case 'CLEAR_SELECTED_BLOCK':
-			if ( state.start === null && state.end === null &&
-					state.focus === null && ! state.isMultiSelecting ) {
+			if ( state.start === null && state.end === null && ! state.isMultiSelecting ) {
 				return state;
 			}
 
@@ -375,8 +374,8 @@ export function blockSelection( state = {
 				...state,
 				start: null,
 				end: null,
-				focus: null,
 				isMultiSelecting: false,
+				initialPosition: null,
 			};
 		case 'START_MULTI_SELECT':
 			if ( state.isMultiSelecting ) {
@@ -386,24 +385,24 @@ export function blockSelection( state = {
 			return {
 				...state,
 				isMultiSelecting: true,
+				initialPosition: null,
 			};
 		case 'STOP_MULTI_SELECT':
-			const nextFocus = state.start === state.end ? state.focus : null;
-			if ( ! state.isMultiSelecting && nextFocus === state.focus ) {
+			if ( ! state.isMultiSelecting ) {
 				return state;
 			}
 
 			return {
 				...state,
 				isMultiSelecting: false,
-				focus: nextFocus,
+				initialPosition: null,
 			};
 		case 'MULTI_SELECT':
 			return {
 				...state,
 				start: action.start,
 				end: action.end,
-				focus: state.isMultiSelecting ? state.focus : null,
+				initialPosition: null,
 			};
 		case 'SELECT_BLOCK':
 			if ( action.uid === state.start && action.uid === state.end ) {
@@ -413,21 +412,14 @@ export function blockSelection( state = {
 				...state,
 				start: action.uid,
 				end: action.uid,
-				focus: action.focus || {},
-			};
-		case 'UPDATE_FOCUS':
-			return {
-				...state,
-				start: action.uid,
-				end: action.uid,
-				focus: action.config || {},
+				initialPosition: action.initialPosition,
 			};
 		case 'INSERT_BLOCKS':
 			return {
 				...state,
 				start: action.blocks[ 0 ].uid,
 				end: action.blocks[ 0 ].uid,
-				focus: {},
+				initialPosition: null,
 				isMultiSelecting: false,
 			};
 		case 'REPLACE_BLOCKS':
@@ -438,7 +430,7 @@ export function blockSelection( state = {
 				...state,
 				start: action.blocks[ 0 ].uid,
 				end: action.blocks[ 0 ].uid,
-				focus: {},
+				initialPosition: null,
 				isMultiSelecting: false,
 			};
 		case 'TOGGLE_SELECTION':

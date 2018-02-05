@@ -122,8 +122,8 @@ class GalleryBlock extends Component {
 	}
 
 	componentWillReceiveProps( nextProps ) {
-		// Deselect images when losing focus
-		if ( ! nextProps.focus && this.props.focus ) {
+		// Deselect images when deselecting the block
+		if ( ! nextProps.isSelected && this.props.isSelected ) {
 			this.setState( {
 				selectedImage: null,
 			} );
@@ -131,7 +131,7 @@ class GalleryBlock extends Component {
 	}
 
 	render() {
-		const { attributes, focus, className } = this.props;
+		const { attributes, isSelected, className } = this.props;
 		const { images, columns = defaultColumnsNumber( attributes ), align, imageCrop, linkTo } = attributes;
 
 		const dropZone = (
@@ -141,7 +141,7 @@ class GalleryBlock extends Component {
 		);
 
 		const controls = (
-			focus && (
+			isSelected && (
 				<BlockControls key="controls">
 					<BlockAlignmentToolbar
 						value={ align }
@@ -185,7 +185,7 @@ class GalleryBlock extends Component {
 
 		return [
 			controls,
-			focus && (
+			isSelected && (
 				<InspectorControls key="inspector">
 					<h2>{ __( 'Gallery Settings' ) }</h2>
 					{ images.length > 1 && <RangeControl
