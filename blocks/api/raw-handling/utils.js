@@ -31,7 +31,7 @@ const inlineWhitelist = {
 	br: {},
 };
 
-const inlineBlockWhiteList = {
+const embeddedWhiteList = {
 	img: { attributes: [ 'src', 'alt' ], classes: [ 'alignleft', 'aligncenter', 'alignright', 'alignnone' ] },
 	iframe: { attributes: [ 'src', 'allowfullscreen', 'height', 'width' ] },
 };
@@ -54,7 +54,7 @@ const inlineWrapperWhiteList = {
 const whitelist = {
 	...inlineWhitelist,
 	...inlineWrapperWhiteList,
-	...inlineBlockWhiteList,
+	...embeddedWhiteList,
 	figure: {},
 	blockquote: {},
 	hr: {},
@@ -68,7 +68,7 @@ const whitelist = {
 };
 
 export function isWhitelisted( element ) {
-	return !! whitelist[ element.nodeName.toLowerCase() ];
+	return !! whitelist.hasOwnProperty( element.nodeName.toLowerCase() );
 }
 
 export function isNotWhitelisted( element ) {
@@ -104,7 +104,7 @@ function isInlineForTag( nodeName, tagName ) {
 
 export function isInline( node, tagName ) {
 	const nodeName = node.nodeName.toLowerCase();
-	return !! inlineWhitelist[ nodeName ] || isInlineForTag( nodeName, tagName );
+	return !! inlineWhitelist.hasOwnProperty( nodeName ) || isInlineForTag( nodeName, tagName );
 }
 
 export function isClassWhitelisted( tag, name ) {
@@ -115,12 +115,21 @@ export function isClassWhitelisted( tag, name ) {
 	);
 }
 
-export function isInlineBlock( node ) {
-	return !! inlineBlockWhiteList[ node.nodeName.toLowerCase() ];
+/**
+ * Whether or not the given node is embedded content.
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Content_categories#Embedded_content
+ *
+ * @param {Node} node The node to check.
+ *
+ * @returns {boolean} True if embedded content, false if not.
+ */
+export function isEmbedded( node ) {
+	return !! embeddedWhiteList.hasOwnProperty( node.nodeName.toLowerCase() );
 }
 
 export function isInlineWrapper( node ) {
-	return !! inlineWrapperWhiteList[ node.nodeName.toLowerCase() ];
+	return !! inlineWrapperWhiteList.hasOwnProperty( node.nodeName.toLowerCase() );
 }
 
 export function isAllowedBlock( parentNode, node ) {

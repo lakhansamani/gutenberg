@@ -125,7 +125,7 @@ export class BlockListBlock extends Component {
 
 	getChildContext() {
 		return {
-			unfilteredHTML: get( this.props.user, 'data.capabilities.unfiltered_html', false ),
+			canUserUseUnfilteredHTML: get( this.props.user, [ 'data', 'capabilities', 'unfiltered_html' ], false ),
 		};
 	}
 
@@ -586,7 +586,7 @@ const mapDispatchToProps = ( dispatch, ownProps ) => ( {
 BlockListBlock.className = 'editor-block-list__block-edit';
 
 BlockListBlock.childContextTypes = {
-	unfilteredHTML: noop,
+	canUserUseUnfilteredHTML: noop,
 };
 
 export default compose(

@@ -371,7 +371,7 @@ export default class RichText extends Component {
 			plainText: this.pastedPlainText,
 			mode,
 			tagName: this.props.tagName,
-			allowIframes: this.context.unfilteredHTML,
+			allowIframes: this.context.canUserUseUnfilteredHTML,
 		} );
 
 		if ( typeof content === 'string' ) {
@@ -907,7 +907,7 @@ export default class RichText extends Component {
 
 RichText.contextTypes = {
 	onUndo: noop,
-	unfilteredHTML: noop,
+	canUserUseUnfilteredHTML: noop,
 };
 
 RichText.defaultProps = {

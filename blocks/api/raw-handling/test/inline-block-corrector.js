@@ -6,13 +6,13 @@ import { equal } from 'assert';
 /**
  * Internal dependencies
  */
-import inlineBlockCorrector from '../inline-block-corrector';
+import embeddedContentReducer from '../embedded-content-reducer';
 import { deepFilterHTML } from '../utils';
 
-describe( 'inlineContentConverter', () => {
+describe( 'embeddedContentReducer', () => {
 	it( 'should move inline-block content from paragraph', () => {
 		equal(
-			deepFilterHTML( '<p><strong>test<img></strong></p>', [ inlineBlockCorrector ] ),
+			deepFilterHTML( '<p><strong>test<img></strong></p>', [ embeddedContentReducer ] ),
 			'<img><p><strong>test</strong></p>'
 		);
 	} );

@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { find, get } from 'lodash';
+import { find, get, compact } from 'lodash';
 import showdown from 'showdown';
 
 /**
@@ -22,7 +22,7 @@ import imageCorrector from './image-corrector';
 import blockquoteNormaliser from './blockquote-normaliser';
 import tableNormaliser from './table-normaliser';
 import inlineContentConverter from './inline-content-converter';
-import inlineBlockCorrector from './inline-block-corrector';
+import embeddedContentReducer from './embedded-content-reducer';
 import { deepFilterHTML, isInvalidInline, isNotWhitelisted, isPlain, isInline } from './utils';
 import shortcodeConverter from './shortcode-converter';
 
@@ -114,24 +114,20 @@ export default function rawHandler( { HTML, plainText = '', mode = 'AUTO', tagNa
 			msListConverter,
 		] );
 
-		const iframeUnwrapper = allowIframes ?
-			[] :
-			[ createUnwrapper( ( element ) => element.nodeName === 'IFRAME' ) ];
-
-		piece = deepFilterHTML( piece, [
+		piece = deepFilterHTML( piece, compact( [
 			listReducer,
 			imageCorrector,
 			// Add semantic formatting before attributes are stripped.
 			formattingTransformer,
 			stripAttributes,
 			commentRemover,
-			...iframeUnwrapper,
-			inlineBlockCorrector,
+			! allowIframes && createUnwrapper( ( element ) => element.nodeName === 'IFRAME' ),
+			embeddedContentReducer,
 			createUnwrapper( isNotWhitelisted ),
 			blockquoteNormaliser,
 			tableNormaliser,
 			inlineContentConverter,
-		] );
+		] ) );
 
 		piece = deepFilterHTML( piece, [
 			createUnwrapper( isInvalidInline ),

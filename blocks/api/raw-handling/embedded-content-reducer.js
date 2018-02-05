@@ -1,19 +1,26 @@
 /**
  * Internal dependencies
  */
-import { isInlineBlock } from './utils';
+import { isEmbedded } from './utils';
 
 /**
  * Browser dependencies
  */
 const { ELEMENT_NODE } = window.Node;
 
+/**
+ * This filter takes embedded content out of paragraphs.
+ *
+ * @param {Node} node The node to filter.
+ *
+ * @returns {void}
+ */
 export default function( node ) {
 	if ( node.nodeType !== ELEMENT_NODE ) {
 		return;
 	}
 
-	if ( ! isInlineBlock( node ) ) {
+	if ( ! isEmbedded( node ) ) {
 		return;
 	}
 
