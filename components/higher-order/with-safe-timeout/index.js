@@ -22,6 +22,7 @@ function withSafeTimeout( OriginalComponent ) {
 			super( ...arguments );
 			this.timeouts = [];
 			this.setTimeout = this.setTimeout.bind( this );
+			this.clearTimeout = this.clearTimeout.bind( this );
 			this.clear = this.clear.bind( this );
 		}
 
@@ -38,6 +39,11 @@ function withSafeTimeout( OriginalComponent ) {
 			return id;
 		}
 
+		clearTimeout( id ) {
+			clearTimeout( id );
+			this.clear( id );
+		}
+
 		clear( id ) {
 			this.timeouts = this.timeouts.filter( t => t !== id );
 		}
@@ -47,6 +53,7 @@ function withSafeTimeout( OriginalComponent ) {
 				<OriginalComponent
 					{ ...this.props }
 					setTimeout={ this.setTimeout }
+					clearTimeout={ this.clearTimeout }
 				/>
 			);
 		}
