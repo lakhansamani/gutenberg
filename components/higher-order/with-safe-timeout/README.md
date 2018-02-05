@@ -9,7 +9,7 @@ withSafeTimeout
 /**
  * WordPress dependencies
  */
-import { Component, withSafeTimeout } from '@wordpress/components';
+import { withSafeTimeout } from '@wordpress/components';
 
 function MyEffectfulComponent( { setSafeTimeout } ) {
 	return (
