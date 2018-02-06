@@ -180,6 +180,10 @@ class WritingFlow extends Component {
 	 * @param {DOMElement} target
 	 */
 	selectParentBlock( target ) {
+		if ( ! target ) {
+			return;
+		}
+
 		const parentBlock = target.hasAttribute( 'data-block' ) ? target : target.closest( '[data-block]' );
 		if (
 			parentBlock &&
