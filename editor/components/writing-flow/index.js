@@ -174,6 +174,21 @@ class WritingFlow extends Component {
 		return editables.length > 0 && index === edgeIndex;
 	}
 
+	/**
+	 * Function called to ensure the block parent of the target node is selected.
+	 *
+	 * @param {DOMElement} target
+	 */
+	selectParentBlock( target ) {
+		const parentBlock = target.hasAttribute( 'data-block' ) ? target : target.closest( '[data-block]' );
+		if (
+			parentBlock &&
+			( ! this.props.selectedBlock || parentBlock.getAttribute( 'data-block' ) !== this.props.selectedBlock.uid )
+		) {
+			this.props.onSelectBlock( parentBlock.getAttribute( 'data-block' ) );
+		}
+	}
+
 	onKeyDown( event ) {
 		const { selectedBlock, selectionStart, selectionEnd, blocks, hasMultiSelection } = this.props;
 
@@ -211,10 +226,12 @@ class WritingFlow extends Component {
 		} else if ( isVertical && isVerticalEdge( target, isReverse, isShift ) ) {
 			const closestTabbable = this.getClosestTabbable( target, isReverse );
 			placeCaretAtVerticalEdge( closestTabbable, isReverse, this.verticalRect );
+			this.selectParentBlock( closestTabbable );
 			event.preventDefault();
 		} else if ( isHorizontal && isHorizontalEdge( target, isReverse, isShift ) ) {
 			const closestTabbable = this.getClosestTabbable( target, isReverse );
 			placeCaretAtHorizontalEdge( closestTabbable, isReverse );
+			this.selectParentBlock( closestTabbable );
 			event.preventDefault();
 		}
 
