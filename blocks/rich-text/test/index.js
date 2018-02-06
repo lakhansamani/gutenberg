@@ -6,7 +6,7 @@ import { shallow } from 'enzyme';
 /**
  * Internal dependencies
  */
-import RichText from '../';
+import { RichText } from '../';
 import { diffAriaProps, pickAriaProps } from '../aria';
 
 describe( 'RichText', () => {
