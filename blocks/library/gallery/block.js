@@ -56,15 +56,15 @@ class GalleryBlock extends Component {
 	}
 
 	onSelectImage( index ) {
-		return ( event ) => {
-			// ignore clicks in the editable caption.
-			// Without this logic, text operations like selection, select / unselects the images.
-			if ( event.target.tagName === 'FIGCAPTION' ) {
+		return () => {
+			// if the image is already selected do nothing
+			if ( this.state.selectedImage === index ) {
 				return;
 			}
-			this.setState( ( state ) => ( {
-				selectedImage: index === state.selectedImage ? null : index,
-			} ) );
+
+			this.setState( {
+				selectedImage: index,
+			} );
 
 			// unfocus currently focus editable
 			this.props.setFocus( { ...this.props.focus, editableIndex: undefined } );
