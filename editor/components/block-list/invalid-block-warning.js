@@ -6,12 +6,12 @@ import { connect } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
 import {
 	getBlockType,
-	getUnknownTypeHandlerName,
 	createBlock,
+	rawHandler,
 } from '@wordpress/blocks';
 
 /**
@@ -20,54 +20,32 @@ import {
 import { replaceBlock } from '../../store/actions';
 import Warning from '../warning';
 
-function InvalidBlockWarning( { block, attemptFixParagraph, ignoreInvalid, switchToBlockType } ) {
-	const htmlBlockName = 'core/html';
-	const defaultBlockType = getBlockType( getUnknownTypeHandlerName() );
-	const htmlBlockType = getBlockType( htmlBlockName );
-	const switchTo = ( blockType ) => () => switchToBlockType( blockType );
+function InvalidBlockWarning( { block, onReplace } ) {
+	const hasHTMLBlock = !! getBlockType( 'core/html' );
+
+	const convertToHTML = () => {
+		onReplace( block.uid, createBlock( 'core/html', {
+			content: block.originalContent,
+		} ) );
+	};
+
+	const convertToBlocks = () => {
+		onReplace( block.uid, rawHandler( {
+			HTML: block.originalContent,
+			mode: 'BLOCKS',
+		} ) );
+	};
 
 	return (
 		<Warning>
-			<p>{ defaultBlockType && htmlBlockType && sprintf( __(
-				'This block appears to have been modified externally. ' +
-				'Overwrite the changes or Convert to %s or %s to keep ' +
-				'your changes.'
-			), defaultBlockType.title, htmlBlockType.title ) }</p>
+			<p>{ __( 'This block appears to have been modified externally.' ) }</p>
 			<p>
-				{ block.name === 'core/paragraph' && (
-					<Button
-						onClick={ attemptFixParagraph }
-						isLarge
-					>
-						{ sprintf( __( 'Attempt Fix' ) ) }
-					</Button>
-				) }
-				{ block.name !== 'core/paragraph' && ( <Button
-					onClick={ ignoreInvalid }
-					isLarge
-				>
-					{ sprintf( __( 'Overwrite' ) ) }
-				</Button> ) }
-				{ defaultBlockType && (
-					<Button
-						onClick={ switchTo( defaultBlockType ) }
-						isLarge
-					>
-						{
-							/* translators: Revert invalid block to another block type */
-							sprintf( __( 'Convert to %s' ), defaultBlockType.title )
-						}
-					</Button>
-				) }
-
-				{ htmlBlockType && (
-					<Button
-						onClick={ switchTo( htmlBlockType ) }
-						isLarge
-					>
-						{
-							sprintf( __( 'Edit as HTML' ) )
-						}
+				<Button onClick={ convertToBlocks } isLarge isPrimary={ ! hasHTMLBlock }>
+					{ __( 'Convert to Blocks' ) }
+				</Button>
+				{ hasHTMLBlock && (
+					<Button onClick={ convertToHTML } isLarge isPrimary>
+						{ __( 'Edit as HTML' ) }
 					</Button>
 				) }
 			</p>
@@ -77,31 +55,7 @@ function InvalidBlockWarning( { block, attemptFixParagraph, ignoreInvalid, switc
 
 export default connect(
 	null,
-	( dispatch, ownProps ) => {
-		return {
-			attemptFixParagraph() {
-				const { block } = ownProps;
-				const nextBlock = createBlock( block.name, {
-					content: block.originalContent,
-				} );
-				dispatch( replaceBlock( block.uid, nextBlock ) );
-			},
-			ignoreInvalid() {
-				const { block } = ownProps;
-				const { name, attributes } = block;
-				const nextBlock = createBlock( name, attributes );
-				dispatch( replaceBlock( block.uid, nextBlock ) );
-			},
-			switchToBlockType( blockType ) {
-				const { block } = ownProps;
-				if ( blockType && block ) {
-					const nextBlock = createBlock( blockType.name, {
-						content: block.originalContent,
-					} );
-
-					dispatch( replaceBlock( block.uid, nextBlock ) );
-				}
-			},
-		};
+	{
+		onReplace: replaceBlock,
 	}
 )( InvalidBlockWarning );
